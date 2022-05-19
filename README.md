@@ -1,2 +1,2 @@
 # ChatRabbitMQ
-Caht program with RabbitMQ
+Chat program with RabbitMQ
