@@ -2,22 +2,27 @@ import argparse
 from chat_2 import *
 from commander import Commander
 
+
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output', action='store_true',
-                        help="shows output")
     parser.add_argument(
         "address",
         nargs='?',
         default="localhost",
         help="address of rabbitMQ server (default: localhost)",
     )
+    parser.add_argument(
+        "start_channel",
+        nargs='?',
+        default="default_channel",
+        help="channel to start chatting (default: default_channel)",
+    )
     args = parser.parse_args()
     return args
 
 
-def main(address):
-    chat = Chat()
+def main(address, start_channel):
+    chat = Chat(host_str=address, default_channel=start_channel)
 
     cmdr = Commander()
 
@@ -37,7 +42,6 @@ def main(address):
     chat.dispose()
 
 
-
 if __name__ == '__main__':
     args = get_args()
-    main(args.address)
+    main(args.address, args.start_channel)
