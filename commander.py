@@ -24,6 +24,9 @@ ______________________________________________________""")
         print("End of session")
 
     def parse_execute(self, str_in: str):
+        if len(str_in) == 0:
+            return
+
         if str_in[0] == self.com_symbol:
 
             # No args commands

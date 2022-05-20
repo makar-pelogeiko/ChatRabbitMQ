@@ -2,16 +2,18 @@ import argparse
 from chat_2 import *
 from commander import Commander
 
-# def get_args():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument(
-#         "address",
-#         help="int number of menu item 0 - get info about graph; 1 - create 2 cycles graph and "
-#         "save it to .DOT --data key is necessary",
-#         type=str,
-#     )
-#     args = parser.parse_args()
-#     return args
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--output', action='store_true',
+                        help="shows output")
+    parser.add_argument(
+        "address",
+        nargs='?',
+        default="localhost",
+        help="address of rabbitMQ server (default: localhost)",
+    )
+    args = parser.parse_args()
+    return args
 
 
 def main(address):
@@ -37,4 +39,5 @@ def main(address):
 
 
 if __name__ == '__main__':
-    main('localhost')
+    args = get_args()
+    main(args.address)

@@ -16,9 +16,10 @@ class Chat:
         self.receive_threads = dict()
 
         # For send
-        self.send_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
-        self.send_chnnl = self.send_conn.channel()
-        self.send_chnnl.exchange_declare(exchange='topic_logs', exchange_type='topic')
+        # self.send_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
+        # self.send_chnnl = self.send_conn.channel()
+        # self.send_chnnl.exchange_declare(exchange='topic_logs', exchange_type='topic')
+        # self.send_conn.close()
 
         # TODO create user_name by channel id or connection id
         self.user_name = "user_" + datetime.now().strftime("%m/%d/%Y_%H:%M:%S,%s")
@@ -41,7 +42,7 @@ class Chat:
 
     def callback(self, ch, method, properties, body):
         if self.user_name == method.routing_key.split('.')[0]:
-            print("self message")
+            # print("self message")
             return
 
         channel_name = method.routing_key.split('.')[1]
@@ -104,11 +105,16 @@ class Chat:
         j_msg['channel'] = self.actual_channel
         #j_msg['time_send'] = datetime.now()
 
+        self.send_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
+        self.send_chnnl = self.send_conn.channel()
+        self.send_chnnl.exchange_declare(exchange='topic_logs', exchange_type='topic')
+
         self.send_chnnl.basic_publish(exchange='topic_logs', routing_key=queue_name,
                                    body=json.dumps(j_msg),
                                    properties=pika.BasicProperties(
                                        delivery_mode=2,  # make message persistent
                                    ))
+        self.send_conn.close()
 
     def receive(self, channel):
         #self.connection.ioloop.start()
