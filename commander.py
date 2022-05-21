@@ -39,6 +39,8 @@ ______________________________________________________""")
 
             # One arg commands
             if command_only == self.CMD_switch:
+                if len(str_in.split(' ')) != 2 or str_in.split(' ')[1] == '':
+                    return
                 self.commands[self.CMD_switch](str_in.split(' ')[1])
                 return
 
