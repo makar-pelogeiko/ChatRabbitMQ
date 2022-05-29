@@ -1,5 +1,8 @@
 # ChatRabbitMQ
 Chat program with RabbitMQ
+
+Authors: Alexander Bozhnyuk, Liubov Miloserdova, Makar Pelogeiko
+
 ## Установка и настройка
 
 - скачать иходные файлы и перейти в корневой каталог проекта:
