@@ -21,7 +21,6 @@ class Chat:
         # self.send_chnnl.exchange_declare(exchange='topic_logs', exchange_type='topic')
         # self.send_conn.close()
 
-        # TODO create user_name by channel id or connection id
         self.user_name = "user_" + datetime.now().strftime("%m/%d/%Y_%H:%M:%S,%s")
 
         self.connections[self.actual_channel] = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
@@ -29,10 +28,10 @@ class Chat:
 
         queue_name = self.user_name + '.' + self.actual_channel
         queue = self.channels[self.actual_channel].queue_declare(queue=queue_name, exclusive=True)
-        self.channels[self.actual_channel].basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
+        self.channels[self.actual_channel].basic_consume(queue=queue_name, on_message_callback=self.callback,
+                                                         auto_ack=True)
         self.channels[self.actual_channel].queue_bind(
             exchange='topic_logs', queue=queue.method.queue, routing_key='*.' + self.actual_channel)
-
 
         self.channel_buff[self.actual_channel] = []
         self.mutexes[self.actual_channel] = Lock()
@@ -63,7 +62,7 @@ class Chat:
                 self.channel_buff[channel_name].append(json.loads(body))
 
             self.mutexes[channel_name].release()
-        #print(" [x] Received %r" % json.loads(body))
+        # print(" [x] Received %r" % json.loads(body))
 
     def switch_channel(self, channel_name: str):
         queue_name = self.user_name + '.' + channel_name
@@ -73,7 +72,8 @@ class Chat:
             self.channel_buff[self.actual_channel] = []
             self.mutexes[self.actual_channel] = Lock()
 
-            self.connections[self.actual_channel] = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
+            self.connections[self.actual_channel] = pika.BlockingConnection(
+                pika.ConnectionParameters(host=self.host_str))
             self.channels[self.actual_channel] = self.connections[self.actual_channel].channel()
 
             queue = self.channels[self.actual_channel].queue_declare(queue=queue_name, exclusive=True)
@@ -82,7 +82,8 @@ class Chat:
             self.channels[self.actual_channel].queue_bind(
                 exchange='topic_logs', queue=queue.method.queue, routing_key='*.' + self.actual_channel)
 
-            self.receive_threads[self.actual_channel] = threading.Thread(target=self.receive, args=(self.actual_channel,))
+            self.receive_threads[self.actual_channel] = threading.Thread(target=self.receive,
+                                                                         args=(self.actual_channel,))
             self.receive_threads[self.actual_channel].start()
 
         self.mutexes[self.actual_channel].acquire()
@@ -95,7 +96,6 @@ class Chat:
             message = self.channel_buff[channel_name].pop(0)
             self.printer(message)
 
-
     def send_msg(self, text: str):
         queue_name = self.user_name + '.' + self.actual_channel
 
@@ -103,36 +103,35 @@ class Chat:
         j_msg['text'] = text
         j_msg['user'] = self.user_name
         j_msg['channel'] = self.actual_channel
-        #j_msg['time_send'] = datetime.now()
+        # j_msg['time_send'] = datetime.now()
 
         self.send_conn = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_str))
         self.send_chnnl = self.send_conn.channel()
         self.send_chnnl.exchange_declare(exchange='topic_logs', exchange_type='topic')
 
         self.send_chnnl.basic_publish(exchange='topic_logs', routing_key=queue_name,
-                                   body=json.dumps(j_msg),
-                                   properties=pika.BasicProperties(
-                                       delivery_mode=2,  # make message persistent
-                                   ))
+                                      body=json.dumps(j_msg),
+                                      properties=pika.BasicProperties(
+                                          delivery_mode=2,  # make message persistent
+                                      ))
         self.send_conn.close()
 
     def receive(self, channel):
-        #self.connection.ioloop.start()
+        # self.connection.ioloop.start()
         try:
             self.channels[channel].start_consuming()
         except:
             print(f"done with receiving {channel}")
 
     def dispose(self):
-        print("start disposing chat")
+        # print("start disposing chat")
         for key in self.connections.keys():
             try:
                 self.connections[key].close()
             except:
-                #TODO how can we stop concuming correctly??
                 pass
             self.receive_threads[key].join()
-        print("dispose done")
+        # print("dispose done")
 
     def printer(self, message: dict):
         print(f"channel[{message['channel']}] user[{message['user']}]|  {message['text']}")
